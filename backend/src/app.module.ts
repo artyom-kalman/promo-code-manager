@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PromocodesModule } from './promocodes/promocodes.module';
 import { OrdersModule } from './orders/orders.module';
+import { PromoUsagesModule } from './promo-usages/promo-usages.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { OrdersModule } from './orders/orders.module';
     AuthModule,
     PromocodesModule,
     OrdersModule,
+    PromoUsagesModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

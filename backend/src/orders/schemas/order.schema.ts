@@ -10,6 +10,9 @@ export class Order {
 
   @Prop({ required: true })
   amount: number;
+
+  @Prop({ type: Types.ObjectId, ref: 'Promocode', default: null })
+  promocodeId: Types.ObjectId;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
