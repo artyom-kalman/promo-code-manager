@@ -16,10 +16,7 @@ describe('LockService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        LockService,
-        { provide: 'REDIS_CLIENT', useValue: redis },
-      ],
+      providers: [LockService, { provide: 'REDIS_CLIENT', useValue: redis }],
     }).compile();
 
     service = module.get<LockService>(LockService);

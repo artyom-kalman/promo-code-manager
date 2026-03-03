@@ -9,6 +9,7 @@ import { PromocodesModule } from './promocodes/promocodes.module';
 import { OrdersModule } from './orders/orders.module';
 import { PromoUsagesModule } from './promo-usages/promo-usages.module';
 import { RedisModule } from './redis/redis.module';
+import { ClickHouseModule } from './clickhouse/clickhouse.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RedisModule } from './redis/redis.module';
     OrdersModule,
     PromoUsagesModule,
     RedisModule,
+    ClickHouseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

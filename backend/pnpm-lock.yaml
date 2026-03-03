@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@clickhouse/client':
+        specifier: ^1.18.1
+        version: 1.18.1
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.14(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -336,6 +339,13 @@ packages:
 
   '@borewit/text-codec@0.2.1':
     resolution: {integrity: sha512-k7vvKPbf7J2fZ5klGRD9AeKfUvojuZIQ3BT5u7Jfv+puwXkUBUT5PVyMDfJZpy30CBDXGMgw7fguK/lpOMBvgw==}
+
+  '@clickhouse/client-common@1.18.1':
+    resolution: {integrity: sha512-kDk8miGZVDAzqFrBZRmD9rD82Li8gwaGlJ5MNUpWgxx1OUXRBUkcV6ULysWP1C9Jinb3yle3YLz/XbNOPVgVtQ==}
+
+  '@clickhouse/client@1.18.1':
+    resolution: {integrity: sha512-fO4QggCOSr0WBS9oGIFa83FUhbweP8VTFGOXF51DJQbR/oEXegdocNSma3Gp6F4Km9A1Xm1ZAhwrldtg3prPiQ==}
+    engines: {node: '>=16'}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -3518,6 +3528,12 @@ snapshots:
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@borewit/text-codec@0.2.1': {}
+
+  '@clickhouse/client-common@1.18.1': {}
+
+  '@clickhouse/client@1.18.1':
+    dependencies:
+      '@clickhouse/client-common': 1.18.1
 
   '@colors/colors@1.5.0':
     optional: true

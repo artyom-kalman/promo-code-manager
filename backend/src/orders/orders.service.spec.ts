@@ -32,7 +32,10 @@ describe('OrdersService', () => {
     const result = await service.create('user-1', { amount: 100 });
 
     expect(result).toEqual(expected);
-    expect(model.create).toHaveBeenCalledWith({ userId: 'user-1', amount: 100 });
+    expect(model.create).toHaveBeenCalledWith({
+      userId: 'user-1',
+      amount: 100,
+    });
   });
 
   it('should find orders by user', async () => {
@@ -69,5 +72,4 @@ describe('OrdersService', () => {
       NotFoundException,
     );
   });
-
 });

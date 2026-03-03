@@ -63,5 +63,4 @@ describe('PromoUsagesService', () => {
       userId: 'user-1',
     });
   });
-
 });

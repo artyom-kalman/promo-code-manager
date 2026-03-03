@@ -35,5 +35,4 @@ describe('JwtStrategy', () => {
       strategy.validate({ sub: 'u1', email: 'j@e.com', type: 'refresh' }),
     ).toThrow(UnauthorizedException);
   });
-
 });

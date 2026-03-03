@@ -16,6 +16,9 @@ export class PromoUsage {
 
   @Prop({ required: true })
   discountAmount: number;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const PromoUsageSchema = SchemaFactory.createForClass(PromoUsage);

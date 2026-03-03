@@ -13,6 +13,9 @@ export class Order {
 
   @Prop({ type: Types.ObjectId, ref: 'Promocode', default: null })
   promocodeId: Types.ObjectId;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

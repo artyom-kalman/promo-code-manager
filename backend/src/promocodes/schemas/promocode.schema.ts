@@ -25,6 +25,9 @@ export class Promocode {
 
   @Prop({ required: true, default: true })
   isActive: boolean;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
