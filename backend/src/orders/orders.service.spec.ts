@@ -1,12 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrdersService } from './orders.service';
 import { Order } from './schemas/order.schema';
+import { UsersService } from '../users/users.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
   let model: Record<string, jest.Mock>;
+  let usersService: Record<string, jest.Mock>;
 
   beforeEach(async () => {
     model = {
@@ -15,10 +18,16 @@ describe('OrdersService', () => {
       findById: jest.fn().mockReturnValue({ exec: jest.fn() }),
     };
 
+    usersService = {
+      findOne: jest.fn().mockResolvedValue({ _id: 'user-1', name: 'John', email: 'john@test.com' }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
         { provide: getModelToken(Order.name), useValue: model },
+        { provide: UsersService, useValue: usersService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

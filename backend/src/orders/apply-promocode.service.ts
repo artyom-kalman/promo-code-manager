@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -7,19 +8,28 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Order } from './schemas/order.schema';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Order, OrderDocument } from './schemas/order.schema';
 import { PromocodesService } from '../promocodes/promocodes.service';
 import { PromoUsagesService } from '../promo-usages/promo-usages.service';
+import { UsersService } from '../users/users.service';
 import { ApplyPromocodeDto } from './dto/apply-promocode.dto';
 import { LockService } from '../redis/lock.service';
+import { SYNC_EVENTS } from '../clickhouse/sync-events';
+import { PromoUsageDocument } from '../promo-usages/schemas/promo-usage.schema';
+import { PromocodeDocument } from '../promocodes/schemas/promocode.schema';
 
 @Injectable()
 export class ApplyPromocodeService {
+  private readonly logger = new Logger(ApplyPromocodeService.name);
+
   constructor(
     @InjectModel(Order.name) private orderModel: Model<Order>,
     private readonly promocodesService: PromocodesService,
     private readonly promoUsagesService: PromoUsagesService,
+    private readonly usersService: UsersService,
     private readonly lockService: LockService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async apply(userId: string, orderId: string, dto: ApplyPromocodeDto) {
@@ -33,6 +43,10 @@ export class ApplyPromocodeService {
     }
 
     let releasePromoLock: (() => Promise<void>) | null = null;
+    let updatedOrder: OrderDocument | null = null;
+    let promoUsage: PromoUsageDocument | null = null;
+    let promocode: PromocodeDocument | null = null;
+    let discountAmount: number;
 
     try {
       const order = await this.orderModel.findById(orderId).exec();
@@ -50,7 +64,7 @@ export class ApplyPromocodeService {
         );
       }
 
-      const promocode = await this.promocodesService.findByCode(dto.code);
+      promocode = await this.promocodesService.findByCode(dto.code);
       if (!promocode) {
         throw new NotFoundException('Promocode not found');
       }
@@ -91,9 +105,9 @@ export class ApplyPromocodeService {
         throw new BadRequestException('Per-user limit reached');
       }
 
-      const discountAmount = (order.amount * promocode.discountPercent) / 100;
+      discountAmount = (order.amount * promocode.discountPercent) / 100;
 
-      const updatedOrder = await this.orderModel
+      updatedOrder = await this.orderModel
         .findByIdAndUpdate(
           orderId,
           { promocodeId: promocode._id },
@@ -101,7 +115,7 @@ export class ApplyPromocodeService {
         )
         .exec();
 
-      await this.promoUsagesService.create({
+      promoUsage = await this.promoUsagesService.create({
         userId,
         orderId,
         promocodeId: promocode._id,
@@ -114,6 +128,29 @@ export class ApplyPromocodeService {
         await releasePromoLock();
       }
       await releaseOrderLock();
+
+      if (updatedOrder && promoUsage) {
+        this.usersService
+          .findOne(userId)
+          .then((user) => {
+            if (!user) return;
+
+            this.eventEmitter.emit(SYNC_EVENTS.ORDER_PROMO_APPLIED, {
+              order: updatedOrder,
+              user,
+              discountAmount,
+              promocode,
+            });
+            this.eventEmitter.emit(SYNC_EVENTS.PROMO_USAGE_CREATED, {
+              usage: promoUsage,
+              user,
+              promocode,
+            });
+          })
+          .catch((err) => {
+            this.logger.error('Failed to emit promo apply events', err);
+          });
+      }
     }
   }
 }

@@ -5,19 +5,24 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Promocode, PromocodeDocument } from './schemas/promocode.schema';
 import { CreatePromocodeDto } from './dto/create-promocode.dto';
 import { UpdatePromocodeDto } from './dto/update-promocode.dto';
+import { SYNC_EVENTS } from '../clickhouse/sync-events';
 
 @Injectable()
 export class PromocodesService {
   constructor(
     @InjectModel(Promocode.name) private promocodeModel: Model<Promocode>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(dto: CreatePromocodeDto): Promise<PromocodeDocument> {
     try {
-      return await this.promocodeModel.create(dto);
+      const promocode = await this.promocodeModel.create(dto);
+      this.eventEmitter.emit(SYNC_EVENTS.PROMOCODE_CHANGED, { promocode });
+      return promocode;
     } catch (error: unknown) {
       if (error instanceof Object && 'code' in error && error.code === 11000) {
         throw new ConflictException('Promocode with this code already exists');
@@ -48,6 +53,7 @@ export class PromocodesService {
       .findByIdAndUpdate(id, dto, { new: true })
       .exec();
     if (!promocode) throw new NotFoundException('Promocode not found');
+    this.eventEmitter.emit(SYNC_EVENTS.PROMOCODE_CHANGED, { promocode });
     return promocode;
   }
 
@@ -56,6 +62,7 @@ export class PromocodesService {
       .findByIdAndUpdate(id, { isActive: false }, { new: true })
       .exec();
     if (!promocode) throw new NotFoundException('Promocode not found');
+    this.eventEmitter.emit(SYNC_EVENTS.PROMOCODE_CHANGED, { promocode });
     return promocode;
   }
 }

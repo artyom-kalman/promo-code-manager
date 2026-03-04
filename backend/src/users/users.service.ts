@@ -6,13 +6,18 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { SYNC_EVENTS } from '../clickhouse/sync-events';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async create(dto: CreateUserDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -24,9 +29,11 @@ export class UsersService {
         hashedPassword,
       });
 
-      return this.userModel
+      const user = (await this.userModel
         .findById(createdUser._id)
-        .exec() as Promise<UserDocument>;
+        .exec()) as UserDocument;
+      this.eventEmitter.emit(SYNC_EVENTS.USER_CHANGED, { user });
+      return user;
     } catch (error: unknown) {
       if (error instanceof Object && 'code' in error && error.code === 11000) {
         throw new ConflictException(
@@ -56,6 +63,7 @@ export class UsersService {
       .findByIdAndUpdate(id, dto, { new: true })
       .exec();
     if (!user) throw new NotFoundException('User not found');
+    this.eventEmitter.emit(SYNC_EVENTS.USER_CHANGED, { user });
     return user;
   }
 
@@ -64,6 +72,7 @@ export class UsersService {
       .findByIdAndUpdate(id, { isActive: false }, { new: true })
       .exec();
     if (!user) throw new NotFoundException('User not found');
+    this.eventEmitter.emit(SYNC_EVENTS.USER_CHANGED, { user });
     return user;
   }
 }

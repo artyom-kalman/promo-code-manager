@@ -10,10 +10,12 @@ import { OrdersModule } from './orders/orders.module';
 import { PromoUsagesModule } from './promo-usages/promo-usages.module';
 import { RedisModule } from './redis/redis.module';
 import { ClickHouseModule } from './clickhouse/clickhouse.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
     UsersModule,
     DatabaseModule,
     AuthModule,

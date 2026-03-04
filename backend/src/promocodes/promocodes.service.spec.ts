@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PromocodesService } from './promocodes.service';
 import { Promocode } from './schemas/promocode.schema';
 
@@ -21,6 +22,7 @@ describe('PromocodesService', () => {
       providers: [
         PromocodesService,
         { provide: getModelToken(Promocode.name), useValue: model },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

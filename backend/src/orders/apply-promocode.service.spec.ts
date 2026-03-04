@@ -6,10 +6,12 @@ import {
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplyPromocodeService } from './apply-promocode.service';
 import { Order } from './schemas/order.schema';
 import { PromocodesService } from '../promocodes/promocodes.service';
 import { PromoUsagesService } from '../promo-usages/promo-usages.service';
+import { UsersService } from '../users/users.service';
 import { LockService } from '../redis/lock.service';
 
 describe('ApplyPromocodeService', () => {
@@ -17,6 +19,7 @@ describe('ApplyPromocodeService', () => {
   let orderModel: Record<string, jest.Mock>;
   let promocodesService: Record<string, jest.Mock>;
   let promoUsagesService: Record<string, jest.Mock>;
+  let usersService: Record<string, jest.Mock>;
   let lockService: Record<string, jest.Mock>;
 
   let releaseOrderLock: jest.Mock;
@@ -41,6 +44,10 @@ describe('ApplyPromocodeService', () => {
       create: jest.fn(),
     };
 
+    usersService = {
+      findOne: jest.fn().mockResolvedValue({ _id: 'user-1', name: 'John', email: 'john@test.com' }),
+    };
+
     lockService = {
       acquire: jest.fn(),
     };
@@ -51,7 +58,9 @@ describe('ApplyPromocodeService', () => {
         { provide: getModelToken(Order.name), useValue: orderModel },
         { provide: PromocodesService, useValue: promocodesService },
         { provide: PromoUsagesService, useValue: promoUsagesService },
+        { provide: UsersService, useValue: usersService },
         { provide: LockService, useValue: lockService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 
