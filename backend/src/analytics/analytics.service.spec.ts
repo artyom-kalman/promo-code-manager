@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsService } from './analytics.service';
 import { ClickHouseService } from '../clickhouse/clickhouse.service';
+import { CacheService } from '../redis/cache.service';
 import { GetPromocodeAnalyticsDto } from './dto/get-promocode-analytics.dto';
 import { GetUserAnalyticsDto } from './dto/get-user-analytics.dto';
 
@@ -15,6 +16,10 @@ describe('AnalyticsService', () => {
       providers: [
         AnalyticsService,
         { provide: ClickHouseService, useValue: clickhouse },
+        {
+          provide: CacheService,
+          useValue: { get: jest.fn().mockResolvedValue(null), set: jest.fn() },
+        },
       ],
     }).compile();
 

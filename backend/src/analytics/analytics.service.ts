@@ -9,6 +9,7 @@ import {
   PromocodeAnalyticsRow,
   UserAnalyticsRow,
 } from './interfaces/promocode-analytics.interface';
+import { CacheService } from '../redis/cache.service';
 
 interface RawPromocodeRow {
   id: string;
@@ -81,11 +82,24 @@ const SORT_COLUMN_MAP: Record<string, string> = {
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly clickhouseService: ClickHouseService) {}
+  constructor(
+    private readonly clickhouseService: ClickHouseService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async getPromocodeAnalytics(
     dto: GetPromocodeAnalyticsDto,
   ): Promise<PaginateResponse<PromocodeAnalyticsRow>> {
+    const cacheKey = `analytics:promocodes:${this.buildCacheHash(dto)}`;
+
+    const cached =
+      await this.cacheService.get<PaginateResponse<PromocodeAnalyticsRow>>(
+        cacheKey,
+      );
+    if (cached) {
+      return cached;
+    }
+
     const { whereClauses, usageWhereClauses, params } =
       this.buildFilterClauses(dto);
 
@@ -146,17 +160,29 @@ export class AnalyticsService {
       ),
     ]);
 
-    return {
+    const result = {
       data: rows.map((row) => this.mapRow(row)),
       total: Number(countResult[0]?.total ?? 0),
       page: dto.page,
       pageSize: dto.pageSize,
     };
+
+    await this.cacheService.set(cacheKey, result);
+
+    return result;
   }
 
   async getUserAnalytics(
     dto: GetUserAnalyticsDto,
   ): Promise<PaginateResponse<UserAnalyticsRow>> {
+    const cacheKey = `analytics:users:${this.buildCacheHash(dto)}`;
+
+    const cached =
+      await this.cacheService.get<PaginateResponse<UserAnalyticsRow>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const { whereClauses, orderWhereClauses, params } =
       this.buildUserFilterClauses(dto);
 
@@ -213,17 +239,31 @@ export class AnalyticsService {
       ),
     ]);
 
-    return {
+    const result = {
       data: rows.map((row) => this.mapUserRow(row)),
       total: Number(countResult[0]?.total ?? 0),
       page: dto.page,
       pageSize: dto.pageSize,
     };
+
+    await this.cacheService.set(cacheKey, result);
+
+    return result;
   }
 
   async getPromoUsageAnalytics(
     dto: GetPromoUsageAnalyticsDto,
   ): Promise<PaginateResponse<PromoUsageAnalyticsRow>> {
+    const cacheKey = `analytics:promo-usages:${this.buildCacheHash(dto)}`;
+
+    const cached =
+      await this.cacheService.get<PaginateResponse<PromoUsageAnalyticsRow>>(
+        cacheKey,
+      );
+    if (cached) {
+      return cached;
+    }
+
     const { whereClauses, params } = this.buildPromoUsageFilterClauses(dto);
 
     const sortColumn = PROMO_USAGE_SORT_COLUMN_MAP[dto.sortBy] ?? 'created_at';
@@ -264,12 +304,16 @@ export class AnalyticsService {
       ),
     ]);
 
-    return {
+    const result = {
       data: rows.map((row) => this.mapPromoUsageRow(row)),
       total: Number(countResult[0]?.total ?? 0),
       page: dto.page,
       pageSize: dto.pageSize,
     };
+
+    await this.cacheService.set(cacheKey, result);
+
+    return result;
   }
 
   private buildPromoUsageFilterClauses(dto: GetPromoUsageAnalyticsDto) {
@@ -423,5 +467,20 @@ export class AnalyticsService {
       totalRevenue: Number(row.total_revenue),
       totalDiscountGiven: Number(row.total_discount_given),
     };
+  }
+
+  private buildCacheHash(dto: Record<string, unknown>): string {
+    const sorted = Object.keys(dto)
+      .sort()
+      .reduce(
+        (acc, key) => {
+          if (dto[key] !== undefined) {
+            acc[key] = dto[key];
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+    return Buffer.from(JSON.stringify(sorted)).toString('base64url');
   }
 }
