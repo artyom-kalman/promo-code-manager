@@ -18,6 +18,18 @@ export interface UserAnalyticsRow {
   promocodesUsed: number;
 }
 
+export interface PromoUsageAnalyticsRow {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  orderId: string;
+  promocodeId: string;
+  promocodeCode: string;
+  discountAmount: number;
+  createdAt: string;
+}
+
 export interface PromocodeAnalyticsRow {
   id: string;
   code: string;

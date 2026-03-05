@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ClickHouseService } from '../clickhouse/clickhouse.service';
 import { GetPromocodeAnalyticsDto } from './dto/get-promocode-analytics.dto';
+import { GetPromoUsageAnalyticsDto } from './dto/get-promo-usage-analytics.dto';
 import { GetUserAnalyticsDto } from './dto/get-user-analytics.dto';
 import {
   PaginateResponse,
+  PromoUsageAnalyticsRow,
   PromocodeAnalyticsRow,
   UserAnalyticsRow,
 } from './interfaces/promocode-analytics.interface';
@@ -22,6 +24,18 @@ interface RawPromocodeRow {
   unique_users: string;
   total_revenue: string;
   total_discount_given: string;
+}
+
+interface RawPromoUsageRow {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  order_id: string;
+  promocode_id: string;
+  promocode_code: string;
+  discount_amount: string;
+  created_at: string;
 }
 
 interface RawUserRow {
@@ -45,6 +59,13 @@ const USER_SORT_COLUMN_MAP: Record<string, string> = {
   total_orders: 'total_orders',
   total_spent: 'total_spent',
   promocodes_used: 'promocodes_used',
+};
+
+const PROMO_USAGE_SORT_COLUMN_MAP: Record<string, string> = {
+  created_at: 'created_at',
+  discount_amount: 'discount_amount',
+  user_name: 'user_name',
+  promocode_code: 'promocode_code',
 };
 
 const SORT_COLUMN_MAP: Record<string, string> = {
@@ -197,6 +218,113 @@ export class AnalyticsService {
       total: Number(countResult[0]?.total ?? 0),
       page: dto.page,
       pageSize: dto.pageSize,
+    };
+  }
+
+  async getPromoUsageAnalytics(
+    dto: GetPromoUsageAnalyticsDto,
+  ): Promise<PaginateResponse<PromoUsageAnalyticsRow>> {
+    const { whereClauses, params } = this.buildPromoUsageFilterClauses(dto);
+
+    const sortColumn = PROMO_USAGE_SORT_COLUMN_MAP[dto.sortBy] ?? 'created_at';
+    const sortDirection = dto.sortOrder === 'asc' ? 'ASC' : 'DESC';
+    const offset = (dto.page - 1) * dto.pageSize;
+
+    params.limit = dto.pageSize;
+    params.offset = offset;
+
+    const whereStr = whereClauses.length
+      ? 'WHERE ' + whereClauses.join(' AND ')
+      : '';
+
+    const [rows, countResult] = await Promise.all([
+      this.clickhouseService.query<RawPromoUsageRow>(
+        `SELECT
+          id,
+          user_id,
+          user_name,
+          user_email,
+          order_id,
+          promocode_id,
+          promocode_code,
+          discount_amount,
+          created_at
+        FROM promo_usages
+        ${whereStr}
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}`,
+        params,
+      ),
+      this.clickhouseService.query<{ total: string }>(
+        `SELECT count(*) AS total
+        FROM promo_usages
+        ${whereStr}`,
+        params,
+      ),
+    ]);
+
+    return {
+      data: rows.map((row) => this.mapPromoUsageRow(row)),
+      total: Number(countResult[0]?.total ?? 0),
+      page: dto.page,
+      pageSize: dto.pageSize,
+    };
+  }
+
+  private buildPromoUsageFilterClauses(dto: GetPromoUsageAnalyticsDto) {
+    const whereClauses: string[] = [];
+    const params: Record<string, unknown> = {};
+
+    if (dto.dateFrom) {
+      whereClauses.push('created_at >= {dateFrom:DateTime}');
+      params.dateFrom = dto.dateFrom;
+    }
+    if (dto.dateTo) {
+      whereClauses.push('created_at <= {dateTo:DateTime}');
+      params.dateTo = dto.dateTo;
+    }
+    if (dto.userId) {
+      whereClauses.push('user_id = {userId:String}');
+      params.userId = dto.userId;
+    }
+    if (dto.promocodeId) {
+      whereClauses.push('promocode_id = {promocodeId:String}');
+      params.promocodeId = dto.promocodeId;
+    }
+    if (dto.promocodeCode) {
+      whereClauses.push(
+        'positionCaseInsensitive(promocode_code, {promocodeCode:String}) > 0',
+      );
+      params.promocodeCode = dto.promocodeCode;
+    }
+    if (dto.userName) {
+      whereClauses.push(
+        'positionCaseInsensitive(user_name, {userName:String}) > 0',
+      );
+      params.userName = dto.userName;
+    }
+    if (dto.userEmail) {
+      whereClauses.push(
+        'positionCaseInsensitive(user_email, {userEmail:String}) > 0',
+      );
+      params.userEmail = dto.userEmail;
+    }
+
+    return { whereClauses, params };
+  }
+
+  private mapPromoUsageRow(row: RawPromoUsageRow): PromoUsageAnalyticsRow {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      userName: row.user_name,
+      userEmail: row.user_email,
+      orderId: row.order_id,
+      promocodeId: row.promocode_id,
+      promocodeCode: row.promocode_code,
+      discountAmount: Number(row.discount_amount),
+      createdAt: row.created_at,
     };
   }
 
