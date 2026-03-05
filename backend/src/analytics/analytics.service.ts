@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ClickHouseService } from '../clickhouse/clickhouse.service';
 import { GetPromocodeAnalyticsDto } from './dto/get-promocode-analytics.dto';
+import { GetUserAnalyticsDto } from './dto/get-user-analytics.dto';
 import {
   PaginateResponse,
   PromocodeAnalyticsRow,
+  UserAnalyticsRow,
 } from './interfaces/promocode-analytics.interface';
 
 interface RawPromocodeRow {
@@ -21,6 +23,29 @@ interface RawPromocodeRow {
   total_revenue: string;
   total_discount_given: string;
 }
+
+interface RawUserRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  is_active: string;
+  created_at: string;
+  total_orders: string;
+  total_spent: string;
+  total_discount: string;
+  promocodes_used: string;
+}
+
+const USER_SORT_COLUMN_MAP: Record<string, string> = {
+  name: 'u.name',
+  email: 'u.email',
+  is_active: 'u.is_active',
+  created_at: 'u.created_at',
+  total_orders: 'total_orders',
+  total_spent: 'total_spent',
+  promocodes_used: 'promocodes_used',
+};
 
 const SORT_COLUMN_MAP: Record<string, string> = {
   code: 'p.code',
@@ -105,6 +130,118 @@ export class AnalyticsService {
       total: Number(countResult[0]?.total ?? 0),
       page: dto.page,
       pageSize: dto.pageSize,
+    };
+  }
+
+  async getUserAnalytics(
+    dto: GetUserAnalyticsDto,
+  ): Promise<PaginateResponse<UserAnalyticsRow>> {
+    const { whereClauses, orderWhereClauses, params } =
+      this.buildUserFilterClauses(dto);
+
+    const sortColumn = USER_SORT_COLUMN_MAP[dto.sortBy] ?? 'u.created_at';
+    const sortDirection = dto.sortOrder === 'asc' ? 'ASC' : 'DESC';
+    const offset = (dto.page - 1) * dto.pageSize;
+
+    params.limit = dto.pageSize;
+    params.offset = offset;
+
+    const orderWhereStr = orderWhereClauses.length
+      ? 'WHERE ' + orderWhereClauses.join(' AND ')
+      : '';
+    const whereStr = whereClauses.length
+      ? 'WHERE ' + whereClauses.join(' AND ')
+      : '';
+
+    const [rows, countResult] = await Promise.all([
+      this.clickhouseService.query<RawUserRow>(
+        `SELECT
+          u.id,
+          u.name,
+          u.email,
+          u.phone,
+          u.is_active,
+          u.created_at,
+          COALESCE(o.total_orders, 0)    AS total_orders,
+          COALESCE(o.total_spent, 0)     AS total_spent,
+          COALESCE(o.total_discount, 0)  AS total_discount,
+          COALESCE(o.promocodes_used, 0) AS promocodes_used
+        FROM users FINAL AS u
+        LEFT JOIN (
+          SELECT
+            ord.user_id,
+            count(*)                    AS total_orders,
+            sum(ord.amount)             AS total_spent,
+            sum(ord.discount_amount)    AS total_discount,
+            uniqExact(ord.promocode_id) AS promocodes_used
+          FROM orders FINAL AS ord
+          ${orderWhereStr}
+          GROUP BY ord.user_id
+        ) AS o ON o.user_id = u.id
+        ${whereStr}
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}`,
+        params,
+      ),
+      this.clickhouseService.query<{ total: string }>(
+        `SELECT count(*) AS total
+        FROM users FINAL AS u
+        ${whereStr}`,
+        params,
+      ),
+    ]);
+
+    return {
+      data: rows.map((row) => this.mapUserRow(row)),
+      total: Number(countResult[0]?.total ?? 0),
+      page: dto.page,
+      pageSize: dto.pageSize,
+    };
+  }
+
+  private buildUserFilterClauses(dto: GetUserAnalyticsDto) {
+    const whereClauses: string[] = [];
+    const orderWhereClauses: string[] = [];
+    const params: Record<string, unknown> = {};
+
+    if (dto.dateFrom) {
+      orderWhereClauses.push('ord.created_at >= {dateFrom:DateTime}');
+      params.dateFrom = dto.dateFrom;
+    }
+    if (dto.dateTo) {
+      orderWhereClauses.push('ord.created_at <= {dateTo:DateTime}');
+      params.dateTo = dto.dateTo;
+    }
+
+    if (dto.name) {
+      whereClauses.push('positionCaseInsensitive(u.name, {name:String}) > 0');
+      params.name = dto.name;
+    }
+    if (dto.email) {
+      whereClauses.push('positionCaseInsensitive(u.email, {email:String}) > 0');
+      params.email = dto.email;
+    }
+    if (dto.isActive !== undefined) {
+      whereClauses.push('u.is_active = {isActive:UInt8}');
+      params.isActive = dto.isActive;
+    }
+
+    return { whereClauses, orderWhereClauses, params };
+  }
+
+  private mapUserRow(row: RawUserRow): UserAnalyticsRow {
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      isActive: Boolean(Number(row.is_active)),
+      createdAt: row.created_at,
+      totalOrders: Number(row.total_orders),
+      totalSpent: Number(row.total_spent),
+      totalDiscount: Number(row.total_discount),
+      promocodesUsed: Number(row.promocodes_used),
     };
   }
 

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsService } from './analytics.service';
 import { ClickHouseService } from '../clickhouse/clickhouse.service';
 import { GetPromocodeAnalyticsDto } from './dto/get-promocode-analytics.dto';
+import { GetUserAnalyticsDto } from './dto/get-user-analytics.dto';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -151,5 +152,135 @@ describe('AnalyticsService', () => {
     const params = calls[0][1];
     expect(params.code).toBe('SUMMER');
     expect(params.isActive).toBe(1);
+  });
+
+  describe('getUserAnalytics', () => {
+    it('should return paginated results with defaults', async () => {
+      clickhouse.query
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ total: '0' }]);
+
+      const dto = Object.assign(new GetUserAnalyticsDto(), {
+        page: 1,
+        pageSize: 20,
+        sortBy: 'created_at',
+        sortOrder: 'desc',
+      });
+
+      const result = await service.getUserAnalytics(dto);
+
+      expect(result).toEqual({
+        data: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+      });
+      expect(clickhouse.query).toHaveBeenCalledTimes(2);
+    });
+
+    it('should map raw ClickHouse rows to typed response', async () => {
+      const rawRow = {
+        id: 'u1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        is_active: '1',
+        created_at: '2024-01-01 00:00:00',
+        total_orders: '10',
+        total_spent: '1500.50',
+        total_discount: '200.25',
+        promocodes_used: '3',
+      };
+
+      clickhouse.query
+        .mockResolvedValueOnce([rawRow])
+        .mockResolvedValueOnce([{ total: '1' }]);
+
+      const dto = Object.assign(new GetUserAnalyticsDto(), {
+        page: 1,
+        pageSize: 20,
+        sortBy: 'created_at',
+        sortOrder: 'desc',
+      });
+
+      const result = await service.getUserAnalytics(dto);
+
+      expect(result.data[0]).toEqual({
+        id: 'u1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        isActive: true,
+        createdAt: '2024-01-01 00:00:00',
+        totalOrders: 10,
+        totalSpent: 1500.5,
+        totalDiscount: 200.25,
+        promocodesUsed: 3,
+      });
+      expect(result.total).toBe(1);
+    });
+
+    it('should include date filters in subquery params', async () => {
+      clickhouse.query
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ total: '0' }]);
+
+      const dto = Object.assign(new GetUserAnalyticsDto(), {
+        page: 1,
+        pageSize: 20,
+        sortBy: 'created_at',
+        sortOrder: 'desc',
+        dateFrom: '2024-01-01',
+        dateTo: '2024-12-31',
+      });
+
+      await service.getUserAnalytics(dto);
+
+      type QueryCall = [string, Record<string, unknown>];
+      const calls = clickhouse.query.mock.calls as QueryCall[];
+
+      const dataQuery = calls[0][0];
+      expect(dataQuery).toContain('ord.created_at >= {dateFrom:DateTime}');
+      expect(dataQuery).toContain('ord.created_at <= {dateTo:DateTime}');
+
+      const params = calls[0][1];
+      expect(params.dateFrom).toBe('2024-01-01');
+      expect(params.dateTo).toBe('2024-12-31');
+    });
+
+    it('should include column filters in WHERE clause', async () => {
+      clickhouse.query
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ total: '0' }]);
+
+      const dto = Object.assign(new GetUserAnalyticsDto(), {
+        page: 1,
+        pageSize: 20,
+        sortBy: 'created_at',
+        sortOrder: 'desc',
+        name: 'John',
+        email: 'john',
+        isActive: 1,
+      });
+
+      await service.getUserAnalytics(dto);
+
+      type QueryCall = [string, Record<string, unknown>];
+      const calls = clickhouse.query.mock.calls as QueryCall[];
+
+      const dataQuery = calls[0][0];
+      expect(dataQuery).toContain(
+        'positionCaseInsensitive(u.name, {name:String})',
+      );
+      expect(dataQuery).toContain(
+        'positionCaseInsensitive(u.email, {email:String})',
+      );
+      expect(dataQuery).toContain('u.is_active = {isActive:UInt8}');
+
+      const params = calls[0][1];
+      expect(params.name).toBe('John');
+      expect(params.email).toBe('john');
+      expect(params.isActive).toBe(1);
+    });
   });
 });

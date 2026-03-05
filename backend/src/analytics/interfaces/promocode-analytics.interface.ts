@@ -5,6 +5,19 @@ export interface PaginateResponse<T> {
   pageSize: number;
 }
 
+export interface UserAnalyticsRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  isActive: boolean;
+  createdAt: string;
+  totalOrders: number;
+  totalSpent: number;
+  totalDiscount: number;
+  promocodesUsed: number;
+}
+
 export interface PromocodeAnalyticsRow {
   id: string;
   code: string;
