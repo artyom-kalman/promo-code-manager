@@ -50,7 +50,7 @@ export class PromocodesService {
     dto: UpdatePromocodeDto,
   ): Promise<PromocodeDocument> {
     const promocode = await this.promocodeModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, dto, { returnDocument: 'after' })
       .exec();
     if (!promocode) throw new NotFoundException('Promocode not found');
     this.eventEmitter.emit(SYNC_EVENTS.PROMOCODE_CHANGED, { promocode });
@@ -59,7 +59,7 @@ export class PromocodesService {
 
   async deactivate(id: string): Promise<PromocodeDocument> {
     const promocode = await this.promocodeModel
-      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .findByIdAndUpdate(id, { isActive: false }, { returnDocument: 'after' })
       .exec();
     if (!promocode) throw new NotFoundException('Promocode not found');
     this.eventEmitter.emit(SYNC_EVENTS.PROMOCODE_CHANGED, { promocode });

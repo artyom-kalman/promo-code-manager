@@ -129,7 +129,7 @@ describe('PromocodesService', () => {
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'promo-1',
       { discountPercent: 20 },
-      { new: true },
+      { returnDocument: 'after' },
     );
   });
 
@@ -155,7 +155,7 @@ describe('PromocodesService', () => {
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'promo-1',
       { isActive: false },
-      { new: true },
+      { returnDocument: 'after' },
     );
   });
 
