@@ -1,0 +1,15 @@
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AnalyticsService } from './analytics.service';
+import { GetPromocodeAnalyticsDto } from './dto/get-promocode-analytics.dto';
+
+@UseGuards(JwtAuthGuard)
+@Controller('analytics')
+export class AnalyticsController {
+  constructor(private readonly analyticsService: AnalyticsService) {}
+
+  @Get('promocodes')
+  getPromocodeAnalytics(@Query() dto: GetPromocodeAnalyticsDto) {
+    return this.analyticsService.getPromocodeAnalytics(dto);
+  }
+}

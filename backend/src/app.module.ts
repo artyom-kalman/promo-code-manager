@@ -11,6 +11,7 @@ import { PromoUsagesModule } from './promo-usages/promo-usages.module';
 import { RedisModule } from './redis/redis.module';
 import { ClickHouseModule } from './clickhouse/clickhouse.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PromoUsagesModule,
     RedisModule,
     ClickHouseModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
