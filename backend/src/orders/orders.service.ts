@@ -46,7 +46,7 @@ export class OrdersService {
     }
 
     if (userId && userId !== order.userId.toString()) {
-      throw new NotFoundException('Order not found')
+      throw new NotFoundException('Order not found');
     }
 
     return order;
