@@ -3,10 +3,15 @@ import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { AuthProvider } from './context/AuthContext';
+import { DateRangeProvider } from './context/DateRangeContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AppLayout } from './components/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { MainPage } from './pages/MainPage';
+import { PromocodesPage } from './pages/PromocodesPage';
+import { OrdersPage } from './pages/OrdersPage';
+import { MyOrdersPage } from './pages/MyOrdersPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,10 +36,18 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <MainPage />
+                    <DateRangeProvider>
+                      <AppLayout />
+                    </DateRangeProvider>
                   </ProtectedRoute>
                 }
-              />
+              >
+                <Route index element={<Navigate to="/promocodes" replace />} />
+                <Route path="/promocodes" element={<PromocodesPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/my-orders" element={<MyOrdersPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+              </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AuthProvider>
