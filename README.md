@@ -31,7 +31,7 @@ docker-compose up --build
 
 - **Frontend:** http://localhost
 - **Backend API:** http://localhost:3000
-- **Swagger:** http://localhost:3000/api
+- **Swagger:** http://localhost:3000/api/docs
 
 Все сервисы (MongoDB, ClickHouse, Redis) имеют healthcheck-и — backend дождётся их готовности перед стартом.
 
