@@ -128,8 +128,8 @@ export function UsersTable() {
         onChange={(val) => setFilter('isActive', val ?? '')}
         data={[
           { value: '', label: 'All' },
-          { value: 'true', label: 'Active' },
-          { value: 'false', label: 'Inactive' },
+          { value: '1', label: 'Active' },
+          { value: '0', label: 'Inactive' },
         ]}
         size="xs"
         w={120}

@@ -146,8 +146,9 @@ export function PromocodeFormModal({
                 label="Start Date (optional)"
                 placeholder="Pick date"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(val) => field.onChange(val ? new Date(val) : null)}
                 clearable
+                error={errors.startDate?.message}
               />
             )}
           />
@@ -159,8 +160,9 @@ export function PromocodeFormModal({
                 label="End Date (optional)"
                 placeholder="Pick date"
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(val) => field.onChange(val ? new Date(val) : null)}
                 clearable
+                error={errors.endDate?.message}
               />
             )}
           />
