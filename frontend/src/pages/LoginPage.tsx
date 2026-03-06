@@ -6,13 +6,10 @@ import {
   TextInput,
   PasswordInput,
   Button,
-  Paper,
-  Title,
-  Text,
-  Container,
   Stack,
 } from '@mantine/core';
 import { useAuth } from '../context/AuthContext';
+import classes from './LoginPage.module.css';
 
 const loginSchema = z.object({
   email: z.email('Invalid email format'),
@@ -49,14 +46,14 @@ export function LoginPage() {
   };
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center">Welcome back</Title>
-      <Text c="dimmed" size="sm" ta="center" mt={5}>
-        Don't have an account?{' '}
-        <Link to="/register">Register</Link>
-      </Text>
+    <div className={classes.wrapper}>
+      <div className={classes.card}>
+        <div className={classes.brand}>PromoCode Manager</div>
+        <div className={classes.subtitle}>
+          Don't have an account?{' '}
+          <Link to="/register" className={classes.link}>Register</Link>
+        </div>
 
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack>
             <TextInput
@@ -76,7 +73,7 @@ export function LoginPage() {
             </Button>
           </Stack>
         </form>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   );
 }

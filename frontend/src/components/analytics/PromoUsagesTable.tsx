@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { TextInput } from '@mantine/core';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { TextInput, SimpleGrid } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { createColumnHelper } from '@tanstack/react-table';
+import { IconReceipt, IconDiscount } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useAnalyticsQuery } from '../../hooks/useAnalyticsQuery';
 import { fetchPromoUsageAnalytics } from '../../api/analytics';
@@ -10,6 +11,7 @@ import type {
   PromoUsageAnalyticsParams,
 } from '../../types/analytics';
 import { AnalyticsTable } from './AnalyticsTable';
+import { StatCard } from './StatCard';
 
 const columnHelper = createColumnHelper<PromoUsageAnalyticsRow>();
 
@@ -117,21 +119,32 @@ export function PromoUsagesTable() {
     </>
   );
 
+  const stats = useMemo(() => {
+    const totalDiscountAmount = data.reduce((s, r) => s + r.discountAmount, 0);
+    return { totalDiscountAmount };
+  }, [data]);
+
   return (
-    <AnalyticsTable
-      columns={columns}
-      data={data}
-      total={total}
-      page={page}
-      pageSize={pageSize}
-      totalPages={totalPages}
-      sorting={sorting}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      onPageChange={setPage}
-      onPageSizeChange={setPageSize}
-      onSortingChange={setSorting}
-      filters={filterNodes}
-    />
+    <>
+      <SimpleGrid cols={{ base: 2, md: 4 }} mb="md">
+        <StatCard label="Total Usages" value={total} icon={IconReceipt} />
+        <StatCard label="Discount Amount" value={`$${stats.totalDiscountAmount.toFixed(2)}`} icon={IconDiscount} />
+      </SimpleGrid>
+      <AnalyticsTable
+        columns={columns}
+        data={data}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        sorting={sorting}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        onSortingChange={setSorting}
+        filters={filterNodes}
+      />
+    </>
   );
 }

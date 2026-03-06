@@ -21,6 +21,7 @@ import {
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useDateRange, type DatePreset } from '../context/DateRangeContext';
+import classes from './AppLayout.module.css';
 
 const navItems = [
   { label: 'Promocodes', path: '/promocodes', icon: IconTicket },
@@ -58,18 +59,20 @@ export function AppLayout() {
     }
   };
 
+  const initials = user?.email
+    ? user.email.substring(0, 2).toUpperCase()
+    : '??';
+
   return (
     <AppShell
-      header={{ height: 56 }}
+      header={{ height: 64 }}
       navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }}
     >
-      <AppShell.Header>
+      <AppShell.Header className={classes.header}>
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text fw={700} size="lg">
-              PromoCode Manager
-            </Text>
+            <span className={classes.brand}>PromoCode Manager</span>
           </Group>
           <Group gap="sm">
             <SegmentedControl
@@ -93,42 +96,38 @@ export function AppLayout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar bg="dark.7" p="sm">
+      <AppShell.Navbar className={classes.navbar} p="sm">
         <AppShell.Section grow>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              label={item.label}
-              leftSection={<item.icon size={18} stroke={1.5} />}
-              active={location.pathname === item.path}
-              onClick={() => {
-                navigate(item.path);
-                close();
-              }}
-              color="blue"
-              variant="filled"
-              styles={{
-                root: { borderRadius: 6, marginBottom: 4, color: 'var(--mantine-color-dark-0)' },
-              }}
-            />
-          ))}
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <NavLink
+                key={item.path}
+                label={item.label}
+                leftSection={<item.icon size={18} stroke={1.5} />}
+                active={isActive}
+                onClick={() => {
+                  navigate(item.path);
+                  close();
+                }}
+                variant="subtle"
+                className={`${classes.navLink} ${isActive ? classes.navLinkActive : ''}`}
+              />
+            );
+          })}
         </AppShell.Section>
 
         <AppShell.Section>
-          <Box
-            style={{ borderTop: '1px solid var(--mantine-color-dark-4)', paddingTop: 12 }}
-          >
-            <Text size="sm" c="dark.2" mb={4} truncate>
-              {user?.email}
-            </Text>
-            <UnstyledButton
-              onClick={logout}
-              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-            >
-              <IconLogout size={16} color="var(--mantine-color-dark-2)" />
-              <Text size="sm" c="dark.2">
-                Logout
+          <Box className={classes.userSection}>
+            <Group gap="sm" mb={8}>
+              <div className={classes.avatar}>{initials}</div>
+              <Text size="sm" c="var(--pcm-text-secondary)" truncate style={{ flex: 1 }}>
+                {user?.email}
               </Text>
+            </Group>
+            <UnstyledButton onClick={logout} className={classes.logoutBtn}>
+              <IconLogout size={16} />
+              <Text size="sm">Logout</Text>
             </UnstyledButton>
           </Box>
         </AppShell.Section>

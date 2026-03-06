@@ -1,0 +1,45 @@
+.card {
+  background-color: var(--pcm-bg-surface);
+  border: 1px solid var(--pcm-border);
+  border-radius: var(--mantine-radius-sm);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--pcm-accent);
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pcm-text-tertiary);
+  margin-bottom: 8px;
+}
+
+.value {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.75rem;
+  color: var(--pcm-text-primary);
+  line-height: 1.1;
+}
+
+.iconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--pcm-bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pcm-text-tertiary);
+}

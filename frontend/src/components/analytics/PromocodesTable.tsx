@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Badge, TextInput, Select, NumberInput } from '@mantine/core';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { Badge, TextInput, Select, NumberInput, SimpleGrid } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { createColumnHelper } from '@tanstack/react-table';
+import { IconTicket, IconUsers, IconCash, IconDiscount } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useAnalyticsQuery } from '../../hooks/useAnalyticsQuery';
 import { fetchPromocodeAnalytics } from '../../api/analytics';
@@ -10,6 +11,7 @@ import type {
   PromocodeAnalyticsParams,
 } from '../../types/analytics';
 import { AnalyticsTable } from './AnalyticsTable';
+import { StatCard } from './StatCard';
 
 const columnHelper = createColumnHelper<PromocodeAnalyticsRow>();
 
@@ -166,21 +168,37 @@ export function PromocodesTable() {
     </>
   );
 
+  const stats = useMemo(() => {
+    const totalUsages = data.reduce((s, r) => s + r.totalUsages, 0);
+    const totalRevenue = data.reduce((s, r) => s + r.totalRevenue, 0);
+    const totalDiscountGiven = data.reduce((s, r) => s + r.totalDiscountGiven, 0);
+    const uniqueUsers = data.reduce((s, r) => s + r.uniqueUsers, 0);
+    return { totalUsages, totalRevenue, totalDiscountGiven, uniqueUsers };
+  }, [data]);
+
   return (
-    <AnalyticsTable
-      columns={columns}
-      data={data}
-      total={total}
-      page={page}
-      pageSize={pageSize}
-      totalPages={totalPages}
-      sorting={sorting}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      onPageChange={setPage}
-      onPageSizeChange={setPageSize}
-      onSortingChange={setSorting}
-      filters={filterNodes}
-    />
+    <>
+      <SimpleGrid cols={{ base: 2, md: 4 }} mb="md">
+        <StatCard label="Total Codes" value={total} icon={IconTicket} />
+        <StatCard label="Total Revenue" value={`$${stats.totalRevenue.toFixed(2)}`} icon={IconCash} />
+        <StatCard label="Discounts Given" value={`$${stats.totalDiscountGiven.toFixed(2)}`} icon={IconDiscount} />
+        <StatCard label="Unique Users" value={stats.uniqueUsers} icon={IconUsers} />
+      </SimpleGrid>
+      <AnalyticsTable
+        columns={columns}
+        data={data}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        sorting={sorting}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        onSortingChange={setSorting}
+        filters={filterNodes}
+      />
+    </>
   );
 }

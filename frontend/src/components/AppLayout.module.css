@@ -1,0 +1,71 @@
+.header {
+  background-color: var(--pcm-bg-surface);
+  border-bottom: 1px solid var(--pcm-border);
+}
+
+.brand {
+  font-family: 'DM Serif Display', Georgia, serif;
+  color: var(--pcm-accent);
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.navbar {
+  background-color: var(--pcm-bg-deepest);
+  border-right: 1px solid var(--pcm-border);
+}
+
+.navLink {
+  border-radius: 6px;
+  margin-bottom: 4px;
+  color: var(--pcm-text-secondary);
+  transition: all 0.15s ease;
+}
+
+.navLink:hover {
+  background-color: var(--pcm-bg-elevated);
+  color: var(--pcm-text-primary);
+}
+
+.navLinkActive {
+  background-color: transparent !important;
+  color: var(--pcm-accent) !important;
+  border-left: 3px solid var(--pcm-accent);
+  padding-left: calc(var(--mantine-spacing-sm) - 3px);
+}
+
+.navLinkActive:hover {
+  background-color: rgba(212, 168, 67, 0.08) !important;
+}
+
+.userSection {
+  border-top: 1px solid var(--pcm-border);
+  padding-top: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--pcm-bg-elevated);
+  border: 1px solid var(--pcm-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pcm-accent);
+  flex-shrink: 0;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--pcm-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.logoutBtn:hover {
+  color: var(--pcm-danger);
+}

@@ -6,13 +6,10 @@ import {
   TextInput,
   PasswordInput,
   Button,
-  Paper,
-  Title,
-  Text,
-  Container,
   Stack,
 } from '@mantine/core';
 import { useAuth } from '../context/AuthContext';
+import classes from './RegisterPage.module.css';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -49,14 +46,14 @@ export function RegisterPage() {
   };
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center">Create an account</Title>
-      <Text c="dimmed" size="sm" ta="center" mt={5}>
-        Already have an account?{' '}
-        <Link to="/login">Sign in</Link>
-      </Text>
+    <div className={classes.wrapper}>
+      <div className={classes.card}>
+        <div className={classes.brand}>Create Account</div>
+        <div className={classes.subtitle}>
+          Already have an account?{' '}
+          <Link to="/login" className={classes.link}>Sign in</Link>
+        </div>
 
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack>
             <TextInput
@@ -88,7 +85,7 @@ export function RegisterPage() {
             </Button>
           </Stack>
         </form>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   );
 }

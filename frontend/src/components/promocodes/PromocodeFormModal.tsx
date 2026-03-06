@@ -164,7 +164,7 @@ export function PromocodeFormModal({
               />
             )}
           />
-          <Button type="submit" loading={isSubmitting}>
+          <Button type="submit" loading={isSubmitting} mt="sm">
             {promocode ? 'Update' : 'Create'}
           </Button>
         </Stack>

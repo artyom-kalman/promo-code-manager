@@ -1,3 +1,54 @@
 @import '@mantine/core/styles.css';
 @import '@mantine/dates/styles.css';
 @import '@mantine/notifications/styles.css';
+
+:root {
+  --pcm-bg-deepest: #0F0F0F;
+  --pcm-bg-deep: #161618;
+  --pcm-bg-surface: #1C1C1F;
+  --pcm-bg-elevated: #232326;
+  --pcm-accent: #D4A843;
+  --pcm-accent-secondary: #C17F59;
+  --pcm-success: #5EA36B;
+  --pcm-danger: #C45C5C;
+  --pcm-text-primary: #F0EDE8;
+  --pcm-text-secondary: #9B978F;
+  --pcm-text-tertiary: #6B6860;
+  --pcm-border: #2A2A2E;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--pcm-bg-deep);
+  color: var(--pcm-text-primary);
+  margin: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pcm-bg-deepest);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pcm-bg-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pcm-text-tertiary);
+}
+
+/* Mantine AppShell main area */
+.mantine-AppShell-main {
+  background-color: var(--pcm-bg-deep);
+}
+
+/* Links default */
+a {
+  color: var(--pcm-accent);
+}

@@ -4,14 +4,38 @@ import { UsersTable } from '../components/analytics/UsersTable';
 import { PromocodesTable } from '../components/analytics/PromocodesTable';
 import { PromoUsagesTable } from '../components/analytics/PromoUsagesTable';
 
+const tabStyles = {
+  tab: {
+    color: 'var(--pcm-text-secondary)',
+    fontWeight: 600,
+    fontSize: '0.8rem',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase' as const,
+    borderBottom: '2px solid transparent',
+    paddingBottom: 12,
+    '&[dataActive]': {
+      color: 'var(--pcm-accent)',
+      borderBottomColor: 'var(--pcm-accent)',
+    },
+  },
+  list: {
+    borderBottom: '1px solid var(--pcm-border)',
+    marginBottom: 20,
+  },
+};
+
 export function AnalyticsPage() {
   return (
-    <Container fluid py="md">
-      <Title order={2} mb="md">
+    <Container fluid py="md" px="lg">
+      <Title
+        order={2}
+        mb="lg"
+        style={{ fontFamily: 'DM Serif Display, Georgia, serif', color: 'var(--pcm-text-primary)' }}
+      >
         Analytics
       </Title>
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue="users" styles={tabStyles}>
         <Tabs.List>
           <Tabs.Tab value="users" leftSection={<IconUsers size={16} />}>
             Users

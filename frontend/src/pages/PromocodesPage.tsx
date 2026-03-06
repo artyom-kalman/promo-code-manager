@@ -21,6 +21,14 @@ import {
 import { showErrorNotification } from '../lib/error';
 import { PromocodeFormModal } from '../components/promocodes/PromocodeFormModal';
 import type { Promocode } from '../types/promocode';
+import classes from './PromocodesPage.module.css';
+
+function getDiscountClass(pct: number) {
+  if (pct <= 15) return classes.discountLow;
+  if (pct <= 30) return classes.discountMid;
+  if (pct <= 60) return classes.discountHigh;
+  return classes.discountMax;
+}
 
 export function PromocodesPage() {
   const queryClient = useQueryClient();
@@ -115,13 +123,13 @@ export function PromocodesPage() {
   return (
     <Container py="md" size="lg">
       <Group justify="space-between" mb="md">
-        <Title order={2}>Promocodes</Title>
+        <Title order={2} className={classes.pageTitle}>Promocodes</Title>
         <Button onClick={openCreate}>Create Promocode</Button>
       </Group>
 
-      <div style={{ position: 'relative', minHeight: 200 }}>
+      <div className={classes.tableWrapper} style={{ position: 'relative', minHeight: 200 }}>
         <LoadingOverlay visible={isLoading} />
-        <Table striped highlightOnHover>
+        <Table className={classes.table} highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Code</Table.Th>
@@ -137,14 +145,29 @@ export function PromocodesPage() {
           <Table.Tbody>
             {promocodes.map((promo) => (
               <Table.Tr key={promo._id}>
-                <Table.Td>{promo.code}</Table.Td>
-                <Table.Td>{promo.discountPercent}%</Table.Td>
+                <Table.Td>
+                  <Badge
+                    variant="light"
+                    color="yellow"
+                    className={classes.codeBadge}
+                  >
+                    {promo.code}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <span className={getDiscountClass(promo.discountPercent)}>
+                    {promo.discountPercent}%
+                  </span>
+                </Table.Td>
                 <Table.Td>{promo.maxUsages}</Table.Td>
                 <Table.Td>{promo.maxUsagesPerUser}</Table.Td>
                 <Table.Td>{formatDate(promo.startDate)}</Table.Td>
                 <Table.Td>{formatDate(promo.endDate)}</Table.Td>
                 <Table.Td>
-                  <Badge color={promo.isActive ? 'green' : 'red'}>
+                  <Badge
+                    color={promo.isActive ? 'var(--pcm-success)' : 'var(--pcm-danger)'}
+                    variant="light"
+                  >
                     {promo.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </Table.Td>
@@ -152,6 +175,7 @@ export function PromocodesPage() {
                   <Group gap="xs">
                     <ActionIcon
                       variant="subtle"
+                      color="var(--pcm-text-secondary)"
                       onClick={() => openEdit(promo)}
                     >
                       <IconEdit size={16} />
@@ -159,7 +183,7 @@ export function PromocodesPage() {
                     {promo.isActive && (
                       <ActionIcon
                         variant="subtle"
-                        color="red"
+                        color="var(--pcm-danger)"
                         onClick={() => deactivateMutation.mutate(promo._id)}
                       >
                         <IconTrash size={16} />
@@ -171,7 +195,7 @@ export function PromocodesPage() {
             ))}
             {!isLoading && promocodes.length === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={8} style={{ textAlign: 'center' }}>
+                <Table.Td colSpan={8} style={{ textAlign: 'center', color: 'var(--pcm-text-tertiary)' }}>
                   No promocodes found
                 </Table.Td>
               </Table.Tr>

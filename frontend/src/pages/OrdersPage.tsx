@@ -5,7 +5,6 @@ import {
   Container,
   Title,
   Button,
-  Paper,
   Stack,
   NumberInput,
 } from '@mantine/core';
@@ -53,10 +52,29 @@ export function OrdersPage() {
 
   return (
     <Container py="md" size="sm">
-      <Title order={2} mb="md">
+      <Title
+        order={2}
+        mb="md"
+        style={{ fontFamily: 'DM Serif Display, Georgia, serif', color: 'var(--pcm-text-primary)' }}
+      >
         Create Order
       </Title>
-      <Paper withBorder shadow="md" p={30} radius="md">
+      <div style={{
+        backgroundColor: 'var(--pcm-bg-surface)',
+        border: '1px solid var(--pcm-border)',
+        borderRadius: 'var(--mantine-radius-md)',
+        padding: 30,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 2,
+          background: 'var(--pcm-accent)',
+        }} />
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack>
             <Controller
@@ -79,7 +97,7 @@ export function OrdersPage() {
             </Button>
           </Stack>
         </form>
-      </Paper>
+      </div>
     </Container>
   );
 }

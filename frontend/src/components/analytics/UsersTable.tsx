@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Badge, TextInput, Select } from '@mantine/core';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { Badge, TextInput, Select, SimpleGrid } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { createColumnHelper } from '@tanstack/react-table';
+import { IconUsers, IconCash, IconDiscount, IconTicket } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useAnalyticsQuery } from '../../hooks/useAnalyticsQuery';
 import { fetchUserAnalytics } from '../../api/analytics';
@@ -10,6 +11,7 @@ import type {
   UserAnalyticsParams,
 } from '../../types/analytics';
 import { AnalyticsTable } from './AnalyticsTable';
+import { StatCard } from './StatCard';
 
 const columnHelper = createColumnHelper<UserAnalyticsRow>();
 
@@ -136,8 +138,22 @@ export function UsersTable() {
     </>
   );
 
+  const stats = useMemo(() => {
+    const totalSpent = data.reduce((s, r) => s + r.totalSpent, 0);
+    const totalDiscount = data.reduce((s, r) => s + r.totalDiscount, 0);
+    const totalPromos = data.reduce((s, r) => s + r.promocodesUsed, 0);
+    return { totalSpent, totalDiscount, totalPromos };
+  }, [data]);
+
   return (
-    <AnalyticsTable
+    <>
+      <SimpleGrid cols={{ base: 2, md: 4 }} mb="md">
+        <StatCard label="Total Users" value={total} icon={IconUsers} />
+        <StatCard label="Total Spent" value={`$${stats.totalSpent.toFixed(2)}`} icon={IconCash} />
+        <StatCard label="Discounts Given" value={`$${stats.totalDiscount.toFixed(2)}`} icon={IconDiscount} />
+        <StatCard label="Promos Used" value={stats.totalPromos} icon={IconTicket} />
+      </SimpleGrid>
+      <AnalyticsTable
       columns={columns}
       data={data}
       total={total}
@@ -152,5 +168,6 @@ export function UsersTable() {
       onSortingChange={setSorting}
       filters={filterNodes}
     />
+    </>
   );
 }

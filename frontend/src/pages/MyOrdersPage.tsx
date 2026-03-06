@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMyOrders, applyPromocode } from '../api/orders';
 import { showErrorNotification } from '../lib/error';
 import { ApplyPromocodeModal } from '../components/orders/ApplyPromocodeModal';
+import classes from './MyOrdersPage.module.css';
 
 export function MyOrdersPage() {
   const queryClient = useQueryClient();
@@ -45,13 +46,13 @@ export function MyOrdersPage() {
 
   return (
     <Container py="md" size="lg">
-      <Title order={2} mb="md">
+      <Title order={2} mb="md" className={classes.pageTitle}>
         My Orders
       </Title>
 
-      <div style={{ position: 'relative', minHeight: 200 }}>
+      <div className={classes.tableWrapper} style={{ position: 'relative', minHeight: 200 }}>
         <LoadingOverlay visible={isLoading} />
-        <Table striped highlightOnHover>
+        <Table className={classes.table} highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Amount</Table.Th>
@@ -72,9 +73,11 @@ export function MyOrdersPage() {
                   <Table.Td>${order.amount.toFixed(2)}</Table.Td>
                   <Table.Td>
                     {promo ? (
-                      <Badge variant="light">{promo.code}</Badge>
+                      <Badge variant="light" color="yellow" className={classes.promoBadge}>
+                        {promo.code}
+                      </Badge>
                     ) : (
-                      <Text size="sm" c="dimmed">
+                      <Text size="sm" c="var(--pcm-text-tertiary)">
                         None
                       </Text>
                     )}
@@ -101,7 +104,7 @@ export function MyOrdersPage() {
             })}
             {!isLoading && orders.length === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
+                <Table.Td colSpan={5} style={{ textAlign: 'center', color: 'var(--pcm-text-tertiary)' }}>
                   No orders yet
                 </Table.Td>
               </Table.Tr>

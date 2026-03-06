@@ -1,0 +1,42 @@
+.pageTitle {
+  font-family: 'DM Serif Display', Georgia, serif;
+  color: var(--pcm-text-primary);
+}
+
+.tableWrapper {
+  background-color: var(--pcm-bg-surface);
+  border: 1px solid var(--pcm-border);
+  border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
+}
+
+.table thead tr th {
+  background-color: var(--pcm-bg-elevated) !important;
+  color: var(--pcm-text-tertiary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--pcm-border) !important;
+  padding: 10px 16px;
+}
+
+.table tbody tr td {
+  border-bottom: 1px solid var(--pcm-border) !important;
+  padding: 10px 16px;
+  color: var(--pcm-text-primary);
+  font-size: 0.875rem;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.table tbody tr:hover td {
+  background-color: rgba(212, 168, 67, 0.03) !important;
+}
+
+.promoBadge {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}

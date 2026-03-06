@@ -45,7 +45,7 @@ export function ApplyPromocodeModal({ opened, onClose, onSubmit }: Props) {
             {...register('code')}
             error={errors.code?.message}
           />
-          <Button type="submit" loading={isSubmitting}>
+          <Button type="submit" loading={isSubmitting} mt="sm">
             Apply
           </Button>
         </Stack>
