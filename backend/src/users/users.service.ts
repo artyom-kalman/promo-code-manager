@@ -60,7 +60,7 @@ export class UsersService {
 
   async update(id: string, dto: UpdateUserDto): Promise<UserDocument> {
     const user = await this.userModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, dto, { returnDocument: 'after' })
       .exec();
     if (!user) throw new NotFoundException('User not found');
     this.eventEmitter.emit(SYNC_EVENTS.USER_CHANGED, { user });
@@ -69,7 +69,7 @@ export class UsersService {
 
   async deactivate(id: string): Promise<UserDocument> {
     const user = await this.userModel
-      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .findByIdAndUpdate(id, { isActive: false }, { returnDocument: 'after' })
       .exec();
     if (!user) throw new NotFoundException('User not found');
     this.eventEmitter.emit(SYNC_EVENTS.USER_CHANGED, { user });

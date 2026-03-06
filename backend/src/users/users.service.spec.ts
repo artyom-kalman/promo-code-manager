@@ -149,7 +149,7 @@ describe('UsersService', () => {
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'user-1',
       { name: 'Jane' },
-      { new: true },
+      { returnDocument: 'after' },
     );
   });
 
@@ -175,7 +175,7 @@ describe('UsersService', () => {
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'user-1',
       { isActive: false },
-      { new: true },
+      { returnDocument: 'after' },
     );
   });
 

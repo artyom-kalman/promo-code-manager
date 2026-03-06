@@ -111,7 +111,7 @@ export class ApplyPromocodeService {
         .findByIdAndUpdate(
           orderId,
           { promocodeId: promocode._id },
-          { new: true },
+          { returnDocument: 'after' },
         )
         .exec();
 

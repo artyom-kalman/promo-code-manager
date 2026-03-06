@@ -19,7 +19,11 @@ describe('OrdersService', () => {
     };
 
     usersService = {
-      findOne: jest.fn().mockResolvedValue({ _id: 'user-1', name: 'John', email: 'john@test.com' }),
+      findOne: jest.fn().mockResolvedValue({
+        _id: 'user-1',
+        name: 'John',
+        email: 'john@test.com',
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
