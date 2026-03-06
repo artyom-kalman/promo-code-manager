@@ -133,7 +133,7 @@ export class AnalyticsService {
           COALESCE(u.unique_users, 0)         AS unique_users,
           COALESCE(u.total_revenue, 0)        AS total_revenue,
           COALESCE(u.total_discount_given, 0) AS total_discount_given
-        FROM promocodes FINAL AS p
+        FROM promocodes AS p FINAL
         LEFT JOIN (
           SELECT
             pu.promocode_id,
@@ -142,7 +142,7 @@ export class AnalyticsService {
             sum(o.amount)           AS total_revenue,
             sum(pu.discount_amount) AS total_discount_given
           FROM promo_usages AS pu
-          INNER JOIN orders FINAL AS o ON o.id = pu.order_id
+          INNER JOIN orders AS o FINAL ON o.id = pu.order_id
           ${usageWhereStr}
           GROUP BY pu.promocode_id
         ) AS u ON u.promocode_id = p.id
@@ -154,7 +154,7 @@ export class AnalyticsService {
       ),
       this.clickhouseService.query<{ total: string }>(
         `SELECT count(*) AS total
-        FROM promocodes FINAL AS p
+        FROM promocodes AS p FINAL
         ${whereStr}`,
         params,
       ),
@@ -213,7 +213,7 @@ export class AnalyticsService {
           COALESCE(o.total_spent, 0)     AS total_spent,
           COALESCE(o.total_discount, 0)  AS total_discount,
           COALESCE(o.promocodes_used, 0) AS promocodes_used
-        FROM users FINAL AS u
+        FROM users AS u FINAL
         LEFT JOIN (
           SELECT
             ord.user_id,
@@ -221,7 +221,7 @@ export class AnalyticsService {
             sum(ord.amount)             AS total_spent,
             sum(ord.discount_amount)    AS total_discount,
             uniqExact(ord.promocode_id) AS promocodes_used
-          FROM orders FINAL AS ord
+          FROM orders AS ord FINAL
           ${orderWhereStr}
           GROUP BY ord.user_id
         ) AS o ON o.user_id = u.id
@@ -233,7 +233,7 @@ export class AnalyticsService {
       ),
       this.clickhouseService.query<{ total: string }>(
         `SELECT count(*) AS total
-        FROM users FINAL AS u
+        FROM users AS u FINAL
         ${whereStr}`,
         params,
       ),
