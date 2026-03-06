@@ -39,8 +39,8 @@ export class OrdersController {
   @Get(':id')
   @ApiOperation({ summary: 'Get an order by ID' })
   @ApiResponse({ status: 200, description: 'Order found' })
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
+  findOne(@CurrentUser() user: { userId: string }, @Param('id') id: string) {
+    return this.ordersService.findOne(id, user.userId);
   }
 
   @Post(':id/apply-promocode')
