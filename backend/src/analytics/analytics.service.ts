@@ -469,13 +469,14 @@ export class AnalyticsService {
     };
   }
 
-  private buildCacheHash(dto: Record<string, unknown>): string {
-    const sorted = Object.keys(dto)
+  private buildCacheHash(dto: object): string {
+    const record = dto as Record<string, unknown>;
+    const sorted = Object.keys(record)
       .sort()
       .reduce(
         (acc, key) => {
-          if (dto[key] !== undefined) {
-            acc[key] = dto[key];
+          if (record[key] !== undefined) {
+            acc[key] = record[key];
           }
           return acc;
         },
